@@ -1,0 +1,108 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract Doctor {
+
+    address[] PatientAuth;
+    address[] DoctorAuth;
+    uint public DocCount;
+    uint public PatCount;
+    uint public MedCount;
+    constructor () public {
+        DocCount = 0;
+        DoctorAuth.push(msg.sender);
+    }
+    
+
+    /*modifier OnlyDoctorCanCall {
+        require(msg.sender == DoctorAuth, "Only doctor can perform this action");
+        _;
+    } */    
+
+    //Quaification using enum
+    enum Qualification {MBBS, DM, BDS, BAMS, BUMS, BHMS, BYNS, BVSc}
+    
+    //Doctor assets
+    struct Doc {
+        uint DocID;
+        string DocName;
+        uint8 YearsofExperience;
+        string Speciality;
+        string WorkPlace;
+        Qualification Qual;
+        address DocAdd;
+    }
+
+    mapping (uint => Doc) DocMap;
+
+    function RegisterDoctor (string memory _DocName, uint8 _YearsofExperience, string memory _Speciality, string memory _WorkPlace, Qualification _Qual) public /* OnlyDoctorCanCall */ {
+        if (DocCount > 0)
+            for(uint i = 0; i < DocCount; i++)
+                require(msg.sender != DoctorAuth[i], "You are already registered");
+        DocMap[DocCount] = Doc (DocCount, _DocName, _YearsofExperience, _Speciality, _WorkPlace, _Qual, address(msg.sender));
+        DoctorAuth.push(msg.sender);
+        DocCount++;
+    }
+}
+
+contract Patient is Doctor {
+
+    constructor () public {
+        PatCount = 0;
+        MedCount = 0;
+        PatientAuth.push(msg.sender);
+    }
+    //Patient assets
+    struct Pat {
+        uint PatID;
+        string PatName;
+        uint8 Age;
+        string[] Diseases;
+        address PatAdd;
+        address[] PresDocs;
+    }
+
+   /* modifier OnlyPatientCanCall {
+        require(msg.sender == PatientAuth, "Only patient can perform this action");
+        _;
+    } */
+
+    mapping (uint => Pat) PatMap;
+    //Medicine assets
+    struct Medicine {
+        uint MedID;
+        string MedName;
+        string ExpiryDate;
+        string Dosage;
+        uint PricePerStrip;
+       // address DocAdd;
+    }
+
+    mapping (uint => Medicine) MedMap;
+
+
+    function RegisterPatient (string memory _PatName, uint8 _Age, string[] memory _Diseases, uint _DocAddCount, address[] memory _PresDocs) public /* OnlyPatientCanCall */ {
+        
+        //Checking if any of the doctor address is not entered as a patient address
+        for(uint j = 0; j < DocCount; j++)
+                require(msg.sender != DoctorAuth[j], "Doctor and Patient address cannot be the same");
+        
+        //Checking any pre-registered patient address is not reused
+        if(PatCount > 0)
+            for(uint i = 0; i < PatCount; i++)
+                require(msg.sender != PatientAuth[i], "Register at a different address");    
+
+        //_Diseases = new string [] (_DiseaseCount);
+        _PresDocs = new address [] (_DocAddCount);
+
+        //for (uint i = 0; i < _DiseaseCount; i++) 
+        //    _Diseases[i];
+
+        for (uint j = 0; j < _DocAddCount; _DocAddCount)
+            _PresDocs[j];
+
+        PatMap[PatCount] = Pat (PatCount, _PatName, _Age, _Diseases, msg.sender, _PresDocs);
+        PatientAuth.push(msg.sender);
+        PatCount++;
+    }
+}
